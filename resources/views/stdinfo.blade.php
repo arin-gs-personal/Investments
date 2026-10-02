@@ -173,6 +173,25 @@
         .btn1 {
             cursor: pointer;
         }
+
+         .table-tools {
+        margin-bottom: 12px;
+    }
+
+    .search-input {
+        width: 100%;
+        max-width: 400px;
+        padding: 10px 14px;
+        border: 1px solid #d1d5db;
+        border-radius: 8px;
+        font-size: 14px;
+        outline: none;
+    }
+
+    .search-input:focus {
+        border-color: #2563eb;
+        box-shadow: 0 0 0 2px rgba(37, 99, 235, 0.1);
+    }
     </style>
 </head>
 
@@ -221,152 +240,218 @@
         </div>
 
         <div class="section-title">22K Gold Purchases</div>
-        <table>
-            <tr>
-                <th>ID</th>
-                <th>Name</th>
-                <th>DOP</th>
-                <th>Cost</th>
-                <th>Qty</th>
-                <th>Per Unit</th>
-                <th>Profit</th>
-            </tr>
 
-            @forelse($studentsKind22 as $index => $student)
-            <tr class="btn1">
-                <td>{{ $index+1 }}</td>
-                <td>{{ $student->student_name }}</td>
-                {{-- <td>{{ $student->created_at->format('d-m-Y') }}</td> --}}
-                <td>{{ date('d/m/Y (D)', strtotime($student->dob)) }}</td>
-                <td>₹{{ number_format($student->cost,2) }}</td>
-                <td>{{ $student->quantity }}g</td>
-                <td>₹{{ round($student->cost/$student->quantity,2) }}</td>
-                <td class="{{ $student->profit >= 0 ? 'profit' : 'loss' }}">
-                    ₹{{ number_format($student->profit,2) }}
-                </td>
-            </tr>
-            @empty
-            <tr><td colspan="7">No Purchases Found</td></tr>
-            @endforelse
+<div class="table-tools">
+    <input
+        type="text"
+        class="search-input table-search"
+        data-table="table22"
+        placeholder="Search 22K purchases..."
+    >
+</div>
 
-            <tr class="footer-row btn1">
-                <td colspan="6" style="text-align: right;">Total Quantity</td>
-                <td>{{ number_format($totalQN22,2) }}g</td>
-            </tr>
-            <tr class="footer-row">
-                <td colspan="6" style="text-align: right;">Purchase Amount</td>
-                <td>{{ number_format($totalCostKind22,2) }}g</td>
-            </tr>
-            <tr class="footer-row">
-                <td colspan="6" style="text-align: right;">Present Amount</td>
-                <td>{{ number_format($today22*$totalQN22,2) }}g</td>
-            </tr>
-            <tr class="footer-row">
-                <td class="{{ $totalCost22 >= 0 ? 'profit' : 'loss' }}" colspan="6" style="text-align: right;">{{ $totalCost22 > 0 ? 'Total Profit' : 'Total Loss' }}</td>
-                <td class="{{ $totalCost22 >= 0 ? 'profit' : 'loss' }}">
-                    ₹{{ number_format($totalCost22,2) }}
-                </td>
-            </tr>
-        </table>
+<table id="table22">
+    <thead>
+        <tr>
+            <th>ID</th>
+            <th>Name</th>
+            <th>DOP</th>
+            <th>Cost</th>
+            <th>Qty</th>
+            <th>Per Unit</th>
+            <th>Profit</th>
+        </tr>
+    </thead>
+
+    <tbody>
+        @forelse($studentsKind22->sortByDesc('dob') as $index => $student)
+        <tr class="purchase-row">
+            <td>{{ $index + 1 }}</td>
+            <td>{{ $student->student_name }}</td>
+            <td data-date="{{ $student->dob }}">
+                {{ date('d/m/Y (D)', strtotime($student->dob)) }}
+            </td>
+            <td>₹{{ number_format($student->cost, 2) }}</td>
+            <td>{{ $student->quantity }}g</td>
+            <td>
+                ₹{{ $student->quantity > 0 ? round($student->cost / $student->quantity, 2) : 0 }}
+            </td>
+            <td class="{{ $student->profit >= 0 ? 'profit' : 'loss' }}">
+                ₹{{ number_format($student->profit, 2) }}
+            </td>
+        </tr>
+        @empty
+        <tr>
+            <td colspan="7">No Purchases Found</td>
+        </tr>
+        @endforelse
+    </tbody>
+
+    <tfoot>
+        <tr class="footer-row">
+            <td colspan="6" style="text-align:right;">Total Quantity</td>
+            <td>{{ number_format($totalQN22, 2) }}g</td>
+        </tr>
+
+        <tr class="footer-row">
+            <td colspan="6" style="text-align:right;">Purchase Amount</td>
+            <td>₹{{ number_format($totalCostKind22, 2) }}</td>
+        </tr>
+
+        <tr class="footer-row">
+            <td colspan="6" style="text-align:right;">Present Amount</td>
+            <td>₹{{ number_format($today22 * $totalQN22, 2) }}</td>
+        </tr>
+
+        <tr class="footer-row">
+            <td class="{{ $totalCost22 >= 0 ? 'profit' : 'loss' }}"
+                colspan="6"
+                style="text-align:right;">
+                {{ $totalCost22 > 0 ? 'Total Profit' : 'Total Loss' }}
+            </td>
+
+            <td class="{{ $totalCost22 >= 0 ? 'profit' : 'loss' }}">
+                ₹{{ number_format($totalCost22, 2) }}
+            </td>
+        </tr>
+    </tfoot>
+</table>
 
         <div class="section-title">24K Gold Purchases</div>
-        <table>
-            <tr>
-                <th>ID</th>
-                <th>Name</th>
-                <th>DOP</th>
-                <th>Cost</th>
-                <th>Qty</th>
-                <th>Per Unit</th>
-                <th>Profit</th>
-            </tr>
 
-            @forelse($studentsKind24 as $index => $student)
-            <tr class="btn1">
-                <td>{{ $index+1 }}</td>
-                <td>{{ $student->student_name }}</td>
-                <td>{{ date('d/m/Y (D)', strtotime($student->dob)) }}</td>
-                <td>₹{{ number_format($student->cost,2) }}</td>
-                <td>{{ $student->quantity }}g</td>
-                <td>₹{{ round($student->cost/$student->quantity,2) }}</td>
-                <td class="{{ $student->profit >= 0 ? 'profit' : 'loss' }}">
-                    ₹{{ number_format($student->profit,2) }}
-                </td>
-            </tr>
-            @empty
-            <tr><td colspan="7">No Purchases Found</td></tr>
-            @endforelse
+<div class="table-tools">
+    <input
+        type="text"
+        class="search-input table-search"
+        data-table="table24"
+        placeholder="Search 24K purchases..."
+    >
+</div>
 
-            <tr class="footer-row btn1">
-                <td colspan="6" style="text-align: right;">Total Quantity</td>
-                <td>{{ number_format($totalQN24,2) }}g</td>
-            </tr>
-            <tr class="footer-row">
-                <td colspan="6" style="text-align: right;">Purchase Amount</td>
-                <td>{{ number_format($totalCostKind24,2) }}g</td>
-            </tr>
-            <tr class="footer-row">
-                <td colspan="6" style="text-align: right;">Present Amount</td>
-                <td>{{ number_format($today24*$totalQN24,2) }}g</td>
-            </tr>
-            <tr class="footer-row">
-                <td class="{{ $totalCost24 >= 0 ? 'profit' : 'loss' }}" colspan="6" style="text-align: right;">{{ $totalCost24 > 0 ? 'Total Profit' : 'Total Loss' }}</td>
-                <td class="{{ $totalCost24 >= 0 ? 'profit' : 'loss' }}">
-                    ₹{{ number_format($totalCost24,2) }}
-                </td>
-            </tr>
-        </table>
+<table id="table24">
+    <thead>
+        <tr>
+            <th>ID</th>
+            <th>Name</th>
+            <th>DOP</th>
+            <th>Cost</th>
+            <th>Qty</th>
+            <th>Per Unit</th>
+            <th>Profit</th>
+        </tr>
+    </thead>
+
+    <tbody>
+        @forelse($studentsKind24->sortByDesc('dob') as $index => $student)
+        <tr class="purchase-row">
+            <td>{{ $index + 1 }}</td>
+            <td>{{ $student->student_name }}</td>
+            <td data-date="{{ $student->dob }}">
+                {{ date('d/m/Y (D)', strtotime($student->dob)) }}
+            </td>
+            <td>₹{{ number_format($student->cost, 2) }}</td>
+            <td>{{ $student->quantity }}g</td>
+            <td>
+                ₹{{ $student->quantity > 0 ? round($student->cost / $student->quantity, 2) : 0 }}
+            </td>
+            <td class="{{ $student->profit >= 0 ? 'profit' : 'loss' }}">
+                ₹{{ number_format($student->profit, 2) }}
+            </td>
+        </tr>
+        @empty
+        <tr>
+            <td colspan="7">No Purchases Found</td>
+        </tr>
+        @endforelse
+    </tbody>
+
+    <tfoot>
+        <!-- Keep your existing 24K total rows here -->
+    </tfoot>
+</table>
+
 
         <div class="section-title">Silver Purchases</div>
-        <table>
-            <tr>
-                <th>ID</th>
-                <th>Name</th>
-                <th>DOP</th>
-                <th>Cost</th>
-                <th>Qty</th>
-                <th>Per Unit</th>
-                <th>Profit</th>
-            </tr>
 
-            @forelse($studentsKindSS as $index => $student)
-            <tr class="btn1">
-                <td>{{ $index+1 }}</td>
-                <td>{{ $student->student_name }}</td>
-                <td>{{ date('d/m/Y (D)', strtotime($student->dob)) }}</td>
-                <td>₹{{ number_format($student->cost,2) }}</td>
-                <td>{{ $student->quantity }}g</td>
-                <td>₹{{ round($student->cost/$student->quantity,2) }}</td>
-                <td class="{{ $student->profit >= 0 ? 'profit' : 'loss' }}">
-                    ₹{{ number_format($student->profit,2) }}
-                </td>
-            </tr>
-            @empty
-            <tr><td colspan="7">No Purchases Found</td></tr>
-            @endforelse
+<div class="table-tools">
+    <input
+        type="text"
+        class="search-input table-search"
+        data-table="tableSilver"
+        placeholder="Search silver purchases..."
+    >
+</div>
 
-            <tr class="footer-row btn1">
-                <td colspan="6" style="text-align: right;">Total Quantity</td>
-                <td>{{ number_format($totalSS,2) }}g</td>
-            </tr>
-            <tr class="footer-row">
-                <td colspan="6" style="text-align: right;">Purchase Amount</td>
-                <td>{{ number_format($totalCostKindSS,2) }}g</td>
-            </tr>
-            <tr class="footer-row">
-                <td colspan="6" style="text-align: right;">Present Amount</td>
-                <td>{{ number_format($silver_cost*$totalSS,2) }}g</td>
-            </tr>
-            <tr class="footer-row">
-                <td class="{{ $totalCostSS >= 0 ? 'profit' : 'loss' }}" colspan="6" style="text-align: right;">{{ $totalCostSS > 0 ? 'Total Profit' : 'Total Loss' }}</td>
-                <td class="{{ $totalCostSS >= 0 ? 'profit' : 'loss' }}">
-                    ₹{{ number_format($totalCostSS,2) }}
-                </td>
-            </tr>
-        </table>
+<table id="tableSilver">
+    <thead>
+        <tr>
+            <th>ID</th>
+            <th>Name</th>
+            <th>DOP</th>
+            <th>Cost</th>
+            <th>Qty</th>
+            <th>Per Unit</th>
+            <th>Profit</th>
+        </tr>
+    </thead>
+
+    <tbody>
+        @forelse($studentsKindSS->sortByDesc('dob') as $index => $student)
+        <tr class="purchase-row">
+            <td>{{ $index + 1 }}</td>
+            <td>{{ $student->student_name }}</td>
+            <td data-date="{{ $student->dob }}">
+                {{ date('d/m/Y (D)', strtotime($student->dob)) }}
+            </td>
+            <td>₹{{ number_format($student->cost, 2) }}</td>
+            <td>{{ $student->quantity }}g</td>
+            <td>
+                ₹{{ $student->quantity > 0 ? round($student->cost / $student->quantity, 2) : 0 }}
+            </td>
+            <td class="{{ $student->profit >= 0 ? 'profit' : 'loss' }}">
+                ₹{{ number_format($student->profit, 2) }}
+            </td>
+        </tr>
+        @empty
+        <tr>
+            <td colspan="7">No Purchases Found</td>
+        </tr>
+        @endforelse
+    </tbody>
+
+    <tfoot>
+        <!-- Keep your existing Silver total rows here -->
+    </tfoot>
+</table>
+
 
     </div>
 </div>
+
+
+<script>
+document.querySelectorAll('.table-search').forEach(function(input) {
+
+    input.addEventListener('input', function() {
+
+        const search = this.value.toLowerCase().trim();
+        const table = document.getElementById(this.dataset.table);
+
+        const rows = table.querySelectorAll(
+            'tbody tr.purchase-row'
+        );
+
+        rows.forEach(function(row) {
+
+            const text = row.textContent.toLowerCase();
+
+            row.style.display =
+                text.includes(search) ? '' : 'none';
+        });
+    });
+});
+</script>
+
 
 </body>
 </html>
