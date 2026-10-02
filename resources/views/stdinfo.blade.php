@@ -366,7 +366,32 @@
     </tbody>
 
     <tfoot>
-        <!-- Keep your existing 24K total rows here -->
+        <tr class="footer-row">
+            <td colspan="6" style="text-align:right;">Total Quantity</td>
+            <td>{{ number_format($totalQN24, 2) }}g</td>
+        </tr>
+
+        <tr class="footer-row">
+            <td colspan="6" style="text-align:right;">Purchase Amount</td>
+            <td>₹{{ number_format($totalCostKind24, 2) }}</td>
+        </tr>
+
+        <tr class="footer-row">
+            <td colspan="6" style="text-align:right;">Present Amount</td>
+            <td>₹{{ number_format($today24 * $totalQN24, 2) }}</td>
+        </tr>
+
+        <tr class="footer-row">
+            <td class="{{ $totalCost24 >= 0 ? 'profit' : 'loss' }}"
+                colspan="6"
+                style="text-align:right;">
+                {{ $totalCost24 > 0 ? 'Total Profit' : 'Total Loss' }}
+            </td>
+
+            <td class="{{ $totalCost24 >= 0 ? 'profit' : 'loss' }}">
+                ₹{{ number_format($totalCost24, 2) }}
+            </td>
+        </tr>
     </tfoot>
 </table>
 
@@ -420,7 +445,25 @@
     </tbody>
 
     <tfoot>
-        <!-- Keep your existing Silver total rows here -->
+        <tr class="footer-row btn1">
+            <td colspan="6" style="text-align: right;">Total Quantity</td>
+            <td>{{ number_format($totalSS,2) }}g</td>
+        </tr>
+        <tr class="footer-row">
+            <td colspan="6" style="text-align: right;">Purchase Amount</td>
+            <td>{{ number_format($totalCostKindSS,2) }}g</td>
+        </tr>
+        <tr class="footer-row">
+            <td colspan="6" style="text-align: right;">Present Amount</td>
+            <td>{{ number_format($silver_cost*$totalSS,2) }}g</td>
+        </tr>
+        <tr class="footer-row">
+            <td class="{{ $totalCostSS >= 0 ? 'profit' : 'loss' }}" colspan="6" style="text-align: right;">{{ $totalCostSS > 0 ? 'Total Profit' : 'Total Loss' }}</td>
+            <td class="{{ $totalCostSS >= 0 ? 'profit' : 'loss' }}">
+                ₹{{ number_format($totalCostSS,2) }}
+            </td>
+        </tr>
+
     </tfoot>
 </table>
 
