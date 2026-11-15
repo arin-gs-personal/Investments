@@ -9,6 +9,18 @@ use Illuminate\Support\Facades\Auth;
 
 use Illuminate\Http\Request;
 
+Route::middleware(['auth'])->group(function () {
+
+    Route::get('/rate', [RateController::class, 'create'])
+        ->name('rate');
+
+    Route::get('/rate/fetch', [RateController::class, 'fetchRates'])
+        ->name('rate.fetch');
+
+    Route::post('/rate', [RateController::class, 'store']);
+
+});
+
 
 Route::post('/logout', function (Request $request) {
     Auth::logout();

@@ -177,23 +177,110 @@
         </div>
 
         <div class="form-box">
-            <h2>Rate Updation Form</h2>
+    <h2>Rate Updation Form</h2>
 
-            <form method="POST" action="/rate">
-                @csrf
-                <label>22k Today Rate</label>
-                <input type="number" class="lable" placeholder="₹ {{ $today22 }}" name="today22" required>
+    <div style="text-align:center; margin-bottom:20px;">
 
-                <label>24k Today Rate</label>
-                <input type="number" placeholder="₹ {{ $today24 }}" name="today24" required>
+        <button type="button"
+                id="fetchRates"
+                style="width:auto; padding:12px 25px;">
+            Fetch Today's Rates
+        </button>
 
-                <label>Silver Today Rate</label>
-                <input type="number" placeholder="₹ {{ $silver_cost }}" name="silver_cost" required>
+        <p id="rateStatus" style="margin-top:12px;"></p>
 
-                <button type="submit">Submit Rate</button>
-            </form>
-        </div>
     </div>
+
+    <form method="POST" action="/rate">
+        @csrf
+
+        <label>22K Today Rate (Per Gram)</label>
+        <input type="number"
+               step="0.01"
+               id="today22"
+               name="today22"
+               value="{{ old('today22', $today22) }}"
+               required>
+
+        <label>24K Today Rate (Per Gram)</label>
+        <input type="number"
+               step="0.01"
+               id="today24"
+               name="today24"
+               value="{{ old('today24', $today24) }}"
+               required>
+
+        <label>Silver Today Rate (Per Gram)</label>
+        <input type="number"
+               step="0.01"
+               id="silver_cost"
+               name="silver_cost"
+               value="{{ old('silver_cost', $silver_cost) }}"
+               required>
+
+        <button type="submit">Submit Rate</button>
+    </form>
+</div>
+    </div>
+
+
+
+    <script>
+        document.getElementById('fetchRates').addEventListener('click', async function () {
+
+            const button = this;
+            const status = document.getElementById('rateStatus');
+
+            button.disabled = true;
+            button.innerText = 'Fetching Rates...';
+
+            status.style.color = '#334770';
+            status.innerText = 'Connecting to rate server...';
+
+            try {
+
+                const response = await fetch(
+                    @json(route('rate.fetch')),
+                    {
+                        method: 'GET',
+                        headers: {
+                            'Accept': 'application/json'
+                        }
+                    }
+                );
+
+                const data = await response.json();
+
+                if (!response.ok || !data.success) {
+                    throw new Error(data.message || 'Unable to fetch rates');
+                }
+
+                // Populate the input fields
+                document.getElementById('today22').value = data.today22;
+                document.getElementById('today24').value = data.today24;
+                document.getElementById('silver_cost').value = data.silver_cost;
+
+                status.style.color = 'green';
+
+                status.innerHTML =
+                    'Rates fetched successfully!<br>' +
+                    'Gold date: ' + data.gold_date +
+                    '<br>Silver date: ' + data.silver_date;
+
+            } catch (error) {
+
+                status.style.color = 'red';
+                status.innerText = error.message;
+
+            } finally {
+
+                button.disabled = false;
+                button.innerText = "Fetch Today's Rates";
+
+            }
+
+        });
+    </script>
 
 </body>
 </html>

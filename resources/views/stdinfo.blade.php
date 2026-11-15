@@ -30,6 +30,7 @@ $makePurchaseRows = static function ($students) {
 <head>
     <title>Investment Dashboard</title>
     <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="csrf-token" content="{{ csrf_token() }}">
     <link rel="icon" type="image/png" href="/images/logo004.png">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/jqwidgets-scripts@17.0.0/jqwidgets/styles/jqx.base.css">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/jqwidgets-scripts@17.0.0/jqwidgets/styles/jqx.light.css">
@@ -295,6 +296,11 @@ $makePurchaseRows = static function ($students) {
         border-color: #2563eb;
         box-shadow: 0 0 0 2px rgba(37, 99, 235, 0.1);
     }
+
+    .jqx-input {
+        background-color: #efefef;
+        justify-items: center;
+    }
     </style>
 </head>
 
@@ -325,21 +331,31 @@ $makePurchaseRows = static function ($students) {
         </div>
 
         
+        <div style="text-align:center; margin-bottom:20px;">
+            <button type="button"
+                    id="fetchRates"
+                    style="width:auto; padding:12px 25px;">
+                Fetch Today's Rates
+            </button>
+            {{-- <p id="rateStatus" role="status" aria-live="polite" style="margin-top:12px;"></p> --}}
+        </div>
+
         <div class="cards">
             <div class="card gold22">
                 <h3>22K Gold Rate</h3>
-                <p>₹ {{ $today22 }}</p>
+                <p id="rate22Value">₹ {{ $today22 }}</p>
             </div>
 
             <div class="card gold24">
                 <h3>24K Gold Rate</h3>
-                <p>₹ {{ $today24 }}</p>
+                <p id="rate24Value">₹ {{ $today24 }}</p>
             </div>
 
             <div class="card silver">
                 <h3>Silver Rate</h3>
-                <p>₹ {{ $silver_cost }}</p>
+                <p id="silverRateValue">₹ {{ $silver_cost }}</p>
             </div>
+            <p id="rateStatus" role="status" aria-live="polite" style="margin-top: 12px;color: green;width: 615px;left: 80%;position: relative;"></p>
         </div>
 
         {{-- <div class="section-title">22K Gold Purchases</div> --}}
@@ -365,11 +381,11 @@ $makePurchaseRows = static function ($students) {
     <div class="summary-label">Purchase Amount</div>
     <div class="summary-value">₹{{ number_format($totalCostKind22, 2) }}</div>
     <div class="summary-label">Present Amount</div>
-    <div class="summary-value">₹{{ number_format($today22 * $totalQN22, 2) }}</div>
-    <div class="summary-label {{ $totalCost22 >= 0 ? 'profit' : 'loss' }}">
+    <div class="summary-value" id="presentAmount22">₹{{ number_format($today22 * $totalQN22, 2) }}</div>
+    <div class="summary-label {{ $totalCost22 >= 0 ? 'profit' : 'loss' }}" id="profitLabel22">
         {{ $totalCost22 > 0 ? 'Total Profit' : ($totalCost22 < 0 ? 'Total Loss' : 'Net Result') }}
     </div>
-    <div class="summary-value {{ $totalCost22 >= 0 ? 'profit' : 'loss' }}">
+    <div class="summary-value {{ $totalCost22 >= 0 ? 'profit' : 'loss' }}" id="profitAmount22">
         ₹{{ number_format($totalCost22, 2) }}
     </div>
 </div>
@@ -397,11 +413,11 @@ $makePurchaseRows = static function ($students) {
     <div class="summary-label">Purchase Amount</div>
     <div class="summary-value">₹{{ number_format($totalCostKind24, 2) }}</div>
     <div class="summary-label">Present Amount</div>
-    <div class="summary-value">₹{{ number_format($today24 * $totalQN24, 2) }}</div>
-    <div class="summary-label {{ $totalCost24 >= 0 ? 'profit' : 'loss' }}">
+    <div class="summary-value" id="presentAmount24">₹{{ number_format($today24 * $totalQN24, 2) }}</div>
+    <div class="summary-label {{ $totalCost24 >= 0 ? 'profit' : 'loss' }}" id="profitLabel24">
         {{ $totalCost24 > 0 ? 'Total Profit' : ($totalCost24 < 0 ? 'Total Loss' : 'Net Result') }}
     </div>
-    <div class="summary-value {{ $totalCost24 >= 0 ? 'profit' : 'loss' }}">
+    <div class="summary-value {{ $totalCost24 >= 0 ? 'profit' : 'loss' }}" id="profitAmount24">
         ₹{{ number_format($totalCost24, 2) }}
     </div>
 </div>
@@ -430,11 +446,11 @@ $makePurchaseRows = static function ($students) {
     <div class="summary-label">Purchase Amount</div>
     <div class="summary-value">₹{{ number_format($totalCostKindSS, 2) }}</div>
     <div class="summary-label">Present Amount</div>
-    <div class="summary-value">₹{{ number_format($silver_cost * $totalSS, 2) }}</div>
-    <div class="summary-label {{ $totalCostSS >= 0 ? 'profit' : 'loss' }}">
+    <div class="summary-value" id="presentAmountSilver">₹{{ number_format($silver_cost * $totalSS, 2) }}</div>
+    <div class="summary-label {{ $totalCostSS >= 0 ? 'profit' : 'loss' }}" id="profitLabelSilver">
         {{ $totalCostSS > 0 ? 'Total Profit' : ($totalCostSS < 0 ? 'Total Loss' : 'Net Result') }}
     </div>
-    <div class="summary-value {{ $totalCostSS >= 0 ? 'profit' : 'loss' }}">
+    <div class="summary-value {{ $totalCostSS >= 0 ? 'profit' : 'loss' }}" id="profitAmountSilver">
         ₹{{ number_format($totalCostSS, 2) }}
     </div>
 </div>
@@ -521,7 +537,8 @@ function initializePurchaseGrid(elementId, rows) {
         source: new $.jqx.dataAdapter(source),
 
         pageable: true,
-        pagesize: 5,
+        // pagesize: auto,
+        // autopagesize: true,
         pagesizeoptions: ['5', '10', '20'],
         pagermode: 'default',
         pagerheight: 45,
@@ -543,7 +560,8 @@ function initializePurchaseGrid(elementId, rows) {
             {
                 text: 'Name',
                 datafield: 'name',
-                minwidth: 140,
+                minwidth: 100,
+                width: 500,
                 cellsrenderer: function (row, column, value) {
                     return '<div style="padding:8px;">' +
                         escapeHtml(value) + '</div>';
@@ -621,22 +639,157 @@ function initializePurchaseGrid(elementId, rows) {
 }
 
 
-const purchaseGrids = {
-    table22: initializePurchaseGrid(
-        'table22',
-        {{ \Illuminate\Support\Js::from($makePurchaseRows($studentsKind22)) }}
-    ),
-
-    table24: initializePurchaseGrid(
-        'table24',
-        {{ \Illuminate\Support\Js::from($makePurchaseRows($studentsKind24)) }}
-    ),
-
-    tableSilver: initializePurchaseGrid(
-        'tableSilver',
-        {{ \Illuminate\Support\Js::from($makePurchaseRows($studentsKindSS)) }}
-    )
+const purchaseData = {
+    table22: {{ \Illuminate\Support\Js::from($makePurchaseRows($studentsKind22)) }},
+    table24: {{ \Illuminate\Support\Js::from($makePurchaseRows($studentsKind24)) }},
+    tableSilver: {{ \Illuminate\Support\Js::from($makePurchaseRows($studentsKindSS)) }}
 };
+
+const purchaseGrids = {
+    table22: initializePurchaseGrid('table22', purchaseData.table22),
+    table24: initializePurchaseGrid('table24', purchaseData.table24),
+    tableSilver: initializePurchaseGrid('tableSilver', purchaseData.tableSilver)
+};
+
+const rateDisplayConfig = {
+    table22: {
+        rateKey: 'today22',
+        rateElement: 'rate22Value',
+        presentElement: 'presentAmount22',
+        profitLabelElement: 'profitLabel22',
+        profitElement: 'profitAmount22'
+    },
+    table24: {
+        rateKey: 'today24',
+        rateElement: 'rate24Value',
+        presentElement: 'presentAmount24',
+        profitLabelElement: 'profitLabel24',
+        profitElement: 'profitAmount24'
+    },
+    tableSilver: {
+        rateKey: 'silver_cost',
+        rateElement: 'silverRateValue',
+        presentElement: 'presentAmountSilver',
+        profitLabelElement: 'profitLabelSilver',
+        profitElement: 'profitAmountSilver'
+    }
+};
+
+function updateDashboardRates(rates) {
+    Object.keys(rateDisplayConfig).forEach(function (gridId) {
+        const config = rateDisplayConfig[gridId];
+        const rate = Number(rates[config.rateKey]);
+        const rows = purchaseData[gridId];
+        const totalQuantity = rows.reduce(function (total, row) {
+            return total + Number(row.quantity);
+        }, 0);
+        const purchaseAmount = rows.reduce(function (total, row) {
+            return total + Number(row.cost);
+        }, 0);
+        const presentAmount = rate * totalQuantity;
+        const profit = presentAmount - purchaseAmount;
+        const profitClass = profit >= 0 ? 'profit' : 'loss';
+        const profitLabel = profit > 0
+            ? 'Total Profit'
+            : (profit < 0 ? 'Total Loss' : 'Net Result');
+
+        document.getElementById(config.rateElement).textContent =
+            '₹ ' + formatAmount(rate, 2);
+        document.getElementById(config.presentElement).textContent =
+            '₹' + formatAmount(presentAmount, 2);
+
+        const profitLabelElement = document.getElementById(config.profitLabelElement);
+        const profitElement = document.getElementById(config.profitElement);
+        profitLabelElement.textContent = profitLabel;
+        profitElement.textContent = '₹' + formatAmount(profit, 2);
+        profitLabelElement.classList.remove('profit', 'loss');
+        profitElement.classList.remove('profit', 'loss');
+        profitLabelElement.classList.add(profitClass);
+        profitElement.classList.add(profitClass);
+
+        rows.forEach(function (row) {
+            row.profit = (rate * Number(row.quantity)) - Number(row.cost);
+            row.searchText = [
+                row.name,
+                renderPurchaseDate(row.date),
+                formatAmount(row.cost, 2),
+                row.quantity + 'g',
+                row.perUnit,
+                formatAmount(row.profit, 2)
+            ].join(' ');
+        });
+
+        purchaseGrids[gridId].jqxGrid('updatebounddata', 'data');
+    });
+}
+
+let currentRates = {
+    today22: Number(@json($today22)),
+    today24: Number(@json($today24)),
+    silver_cost: Number(@json($silver_cost))
+};
+updateDashboardRates(currentRates);
+
+document.getElementById('fetchRates').addEventListener('click', async function () {
+    const button = this;
+    const status = document.getElementById('rateStatus');
+
+    button.disabled = true;
+    button.innerText = 'Fetching Rates...';
+    status.style.color = '#334770';
+    status.innerText = 'Connecting to rate server...';
+
+    try {
+        const response = await fetch(@json(route('rate.fetch')), {
+            method: 'GET',
+            headers: { 'Accept': 'application/json' }
+        });
+        const data = await response.json();
+
+        if (!response.ok || !data.success) {
+            throw new Error(data.message || 'Unable to fetch rates');
+        }
+
+        status.style.color = '#334770';
+        status.innerText = 'Rates fetched. Saving rates...';
+
+        const saveResponse = await fetch(@json(url('/rate')), {
+            method: 'POST',
+            headers: {
+                'Accept': 'application/json',
+                'Content-Type': 'application/json',
+                'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content
+            },
+            body: JSON.stringify({
+                today22: data.today22,
+                today24: data.today24,
+                silver_cost: data.silver_cost
+            })
+        });
+        const savedData = await saveResponse.json();
+
+        if (!saveResponse.ok || !savedData.success) {
+            throw new Error(savedData.message || 'Rates were fetched but could not be saved');
+        }
+
+        currentRates = {
+            today22: Number(data.today22),
+            today24: Number(data.today24),
+            silver_cost: Number(data.silver_cost)
+        };
+        updateDashboardRates(currentRates);
+
+        status.style.color = 'green';
+        status.innerText = 'Rates fetched and saved successfully! Gold date: ' +
+            data.gold_date + ' | Silver date: ' + data.silver_date;
+    } catch (error) {
+        status.style.color = 'red';
+        status.innerText = error.message;
+    } finally {
+        button.disabled = false;
+        button.innerText = "Fetch Today's Rates";
+    }
+});
 
 document.querySelectorAll('.table-search').forEach(function (input) {
 
